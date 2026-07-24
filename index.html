@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Transaksi Pemimpaman Perpustakaan (Header-Detail)</title>
+    <!-- Google Fonts & Tailwind CSS CDN -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f7ff',
+                            100: '#e0effe',
+                            500: '#0284c7',
+                            600: '#0369a1',
+                            700: '#075985',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen pb-12">
+
+    <!-- Header Navigation -->
+    <header class="bg-slate-900 text-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="bg-brand-500 text-white p-2 rounded-lg font-bold">
+                    📚
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-tight">Perpustakaan Digital</h1>
+                    <p class="text-xs text-slate-400">Single Page CRUD Transaction System (Header-Detail Architecture)</p>
+                </div>
+            </div>
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                ● Bypass Auth Active
+            </span>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <!-- FORM SECTION (Input Transaksi Pemimpaman Header-Detail) -->
+        <section class="lg:col-span-5 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-6">
+                <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                    <span>📝</span> Form Transaksi Peminjaman
+                </h2>
+                <span class="text-xs font-semibold px-2.5 py-1 bg-brand-50 text-brand-600 rounded-md">Header & Detail</span>
+            </div>
+
+            <form id="borrowForm" onsubmit="handleFormSubmit(event)" class="space-space-y-5 flex flex-col gap-5">
+                
+                <!-- HEADER DATA -->
+                <div class="p-4 bg-slate-50 rounded-xl border border-slate-200/80 space-y-4">
+                    <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">Data Header Transaksi</h3>
+                    
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Pilih Peminjam (Users)</label>
+                        <select id="userSelect" required class="w-full text-sm border-slate-300 rounded-lg p-2.5 border focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all bg-white">
+                            <option value="">-- Pilih Anggota / Guest --</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Tanggal Tenggat Pengembalian (due_date)</label>
+                        <input type="date" id="dueDateInput" required class="w-full text-sm border-slate-300 rounded-lg p-2.5 border focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all bg-white">
+                        <p class="text-[11px] text-slate-400 mt-1">Tipe data DATE (efisien tanpa jam/detik)</p>
+                    </div>
+                </div>
+
+                <!-- DETAIL DATA (MULTI-BOOK SELECTION) -->
+                <div class="p-4 bg-slate-50 rounded-xl border border-slate-200/80 space-y-4">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">Detail Buku yang Dipinjam</h3>
+                        <button type="button" onclick="addBookRow()" class="text-xs font-semibold text-brand-600 hover:text-brand-700 bg-white px-2.5 py-1 border border-brand-200 rounded-md hover:bg-brand-50 transition-all">
+                            + Tambah Buku
+                        </button>
+                    </div>
+
+                    <div id="bookRowsContainer" class="space-y-3">
+                        <!-- Dynamic Book Rows will be inserted here -->
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full py-3 bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all flex justify-center items-center gap-2">
+                    <span>💾</span> Simpan Transaksi Peminjaman
+                </button>
+            </form>
+        </section>
+
+        <!-- TABLE SECTION (Daftar Transaksi Header-Detail) -->
+        <section class="lg:col-span-7 space-y-6">
+            
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4 mb-6">
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                            <span>📋</span> Data Transaksi Peminjaman
+                        </h2>
+                        <p class="text-xs text-slate-500">Relasi 1 Header Transaksi -> Banyak Detail Buku</p>
+                    </div>
+                    <span id="transactionCounter" class="text-xs font-bold px-3 py-1 bg-slate-100 text-slate-700 rounded-full">
+                        0 Transaksi
+                    </span>
+                </div>
+
+                <!-- Transaction Cards List -->
+                <div id="transactionList" class="space-y-4">
+                    <!-- Transactions will be dynamically rendered here -->
+                </div>
+            </div>
+
+            <!-- JSON LIVE DATA PREVIEW (For Debugging / Demonstration) -->
+            <div class="bg-slate-900 text-slate-300 p-5 rounded-2xl shadow-sm border border-slate-800">
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="text-xs font-mono font-bold text-slate-400 uppercase tracking-wider">🗄️ Relational Database Payload Simulation</h3>
+                    <span class="text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded font-mono">transactions & transaction_details</span>
+                </div>
+                <pre id="jsonPreview" class="text-xs font-mono bg-slate-950 p-3 rounded-lg overflow-x-auto text-emerald-400 max-h-48">[]</pre>
+            </div>
+
+        </section>
+
+    </main>
+
+    <script>
+        // MOCK DATABASE IN MEMORY
+        const mockUsers = [
+            { id: "6767-6767-6767-6767", name: "Maho Nishizumi", role: "STUDENT IN KUROMORIMINE", email: "mahoni01@gmail.com" },
+            { id: "2121-2121-2121-2121", name: "Mika Maling", role: "GUEST", email: "-" },
+            { id: "1414-1414-1414-1414", name: "Darjeeling", role: "STUDENT IN ST GLORIANA", email: "darjeelingtea0@gmail.com" }
+        ];
+
+        const mockBooks = [
+            { id: "a1111-1111-1111-1111", title: "Achtung Panzer", author: "Heinz Guderian" },
+            { id: "b2222-2222-2222-2222", title: "The Psychology of Money", author: "Morgan Housel" },
+            { id: "c3333-3333-3333-3333", title: "Garuzu ando Pantsa", author: "Tsuchii" },
+            { id: "d3333-3333-3333-3333", title: "Rich Dad Por Dad", author: "Robert Kiyosaki" }
+        ];
+
+        // Header Tables Array & Detail Tables Array
+        let transactionsTable = [
+            {
+                id: "t9999999-9999-9999-9999-999999999999",
+                user_id: "6767-6767-6767-6767",
+                due_date: "2026-08-01",
+                created_at: "2026-07-24T17:00:00Z"
+            }
+        ];
+
+        let transactionDetailsTable = [
+            { id: "d1", transaction_id: "t9999999-9999-9999-9999-999999999999", book_id: "a1111-1111-1111-1111", quantity: 1, transaction_type: "BORROW" },
+            { id: "d2", transaction_id: "t9999999-9999-9999-9999-999999999999", book_id: "b2222-2222-2222-2222", quantity: 1, transaction_type: "BORROW" },
+            { id: "d3", transaction_id: "t9999999-9999-9999-9999-999999999999", book_id: "c3333-3333-3333-3333", quantity: 1, transaction_type: "BORROW" }
+        ];
+
+        // INIT APP
+        document.addEventListener('DOMContentLoaded', () => {
+            populateUserDropdown();
+            setDefaultDueDate();
+            addBookRow(); // Add first default row
+            addBookRow(); // Add second row as demonstration
+            renderTransactions();
+        });
+
+        function populateUserDropdown() {
+            const userSelect = document.getElementById('userSelect');
+            userSelect.innerHTML = '<option value="">-- Pilih Anggota / Guest --</option>';
+            mockUsers.forEach(u => {
+                const opt = document.createElement('option');
+                opt.value = u.id;
+                opt.textContent = `${u.name} (${u.role})`;
+                userSelect.appendChild(opt);
+            });
+        }
+
+        function setDefaultDueDate() {
+            const today = new Date();
+            today.setDate(today.getDate() + 7); // Default 7 days loan
+            document.getElementById('dueDateInput').value = today.toISOString().split('T')[0];
+        }
+
+        function addBookRow() {
+            const container = document.getElementById('bookRowsContainer');
+            const rowId = 'row_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4);
+
+            const div = document.createElement('div');
+            div.className = 'flex items-center gap-2 bg-white p-2 rounded-lg border border-slate-200 shadow-sm';
+            div.id = rowId;
+
+            let bookOptions = mockBooks.map(b => `<option value="${b.id}">${b.title} (${b.author})</option>`).join('');
+
+            div.innerHTML = `
+                <select class="book-select flex-1 text-xs border-slate-300 rounded-md p-2 border focus:ring-1 focus:ring-brand-500" required>
+                    <option value="">-- Pilih Buku --</option>
+                    ${bookOptions}
+                </select>
+                <input type="number" class="book-qty w-16 text-xs border-slate-300 rounded-md p-2 border text-center font-bold" value="1" min="1" max="5" required>
+                <button type="button" onclick="removeBookRow('${rowId}')" class="text-rose-500 hover:text-rose-700 p-1 font-bold text-xs">
+                    ✕
+                </button>
+            `;
+
+            container.appendChild(div);
+        }
+
+        function removeBookRow(rowId) {
+            const container = document.getElementById('bookRowsContainer');
+            if (container.children.length > 1) {
+                document.getElementById(rowId).remove();
+            } else {
+                alert("Minimal harus memilih 1 buku dalam transaksi peminjaman!");
+            }
+        }
+
+        function handleFormSubmit(e) {
+            e.preventDefault();
+
+            const userId = document.getElementById('userSelect').value;
+            const dueDate = document.getElementById('dueDateInput').value;
+
+            const bookSelects = document.querySelectorAll('.book-select');
+            const qtyInputs = document.querySelectorAll('.book-qty');
+
+            // Gather Detail Items
+            const selectedBooks = [];
+            bookSelects.forEach((select, idx) => {
+                if (select.value) {
+                    selectedBooks.push({
+                        book_id: select.value,
+                        quantity: parseInt(qtyInputs[idx].value) || 1
+                    });
+                }
+            });
+
+            if (selectedBooks.length === 0) {
+                alert("Silakan pilih minimal 1 buku!");
+                return;
+            }
+
+            // 1. CREATE HEADER TRANSACTION
+            const newTransactionId = "t-" + Math.random().toString(36).substr(2, 9);
+            const newTransactionHeader = {
+                id: newTransactionId,
+                user_id: userId,
+                due_date: dueDate,
+                created_at: new Date().toISOString()
+            };
+
+            transactionsTable.unshift(newTransactionHeader);
+
+            // 2. CREATE TRANSACTION DETAILS
+            selectedBooks.forEach(item => {
+                transactionDetailsTable.push({
+                    id: "d-" + Math.random().toString(36).substr(2, 9),
+                    transaction_id: newTransactionId,
+                    book_id: item.book_id,
+                    quantity: item.quantity,
+                    transaction_type: "BORROW"
+                });
+            });
+
+            // Reset Form Dynamic Rows
+            document.getElementById('bookRowsContainer').innerHTML = '';
+            addBookRow();
+            renderTransactions();
+
+            alert("✅ Transaksi berhasil dibuat dengan struktur Header-Detail!");
+        }
+
+        function deleteTransaction(transactionId) {
+            if (confirm("Apakah Anda yakin ingin menghapus transaksi ini beserta detailnya (CASCADE DELETE)?")) {
+                // Delete Header
+                transactionsTable = transactionsTable.filter(t => t.id !== transactionId);
+                // Delete Details (Cascade)
+                transactionDetailsTable = transactionDetailsTable.filter(d => d.transaction_id !== transactionId);
+                renderTransactions();
+            }
+        }
+
+        function renderTransactions() {
+            const container = document.getElementById('transactionList');
+            const counter = document.getElementById('transactionCounter');
+            const jsonPreview = document.getElementById('jsonPreview');
+
+            container.innerHTML = '';
+            counter.textContent = `${transactionsTable.length} Transaksi`;
+
+            if (transactionsTable.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-10 border-2 border-dashed border-slate-200 rounded-xl text-slate-400">
+                        <p class="text-sm font-medium">Belum ada transaksi peminjaman.</p>
+                    </div>
+                `;
+            }
+
+            transactionsTable.forEach(tx => {
+                const user = mockUsers.find(u => u.id === tx.user_id) || { name: "Unknown", role: "-" };
+                const details = transactionDetailsTable.filter(d => d.transaction_id === tx.id);
+
+                let booksListHtml = details.map(d => {
+                    const book = mockBooks.find(b => b.id === d.book_id) || { title: "Unknown Book" };
+                    return `
+                        <div class="flex justify-between items-center bg-slate-50 p-2 rounded border border-slate-100 text-xs">
+                            <span class="font-medium text-slate-700">📖 ${book.title}</span>
+                            <span class="bg-brand-100 text-brand-700 font-bold px-2 py-0.5 rounded text-[10px]">Qty: ${d.quantity}</span>
+                        </div>
+                    `;
+                }).join('');
+
+                const card = document.createElement('div');
+                card.className = "bg-white border border-slate-200 rounded-xl p-4 shadow-xs space-y-3 relative hover:border-slate-300 transition-all";
+                card.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <span class="font-mono text-[11px] text-slate-400">ID: ${tx.id}</span>
+                            <h4 class="font-bold text-slate-900 text-base flex items-center gap-2">
+                                ${user.name} 
+                                <span class="text-[10px] font-semibold px-2 py-0.5 rounded ${user.role === 'GUEST' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700'}">${user.role}</span>
+                            </h4>
+                        </div>
+                        <button onclick="deleteTransaction('${tx.id}')" class="text-slate-400 hover:text-rose-600 transition-colors text-xs font-bold px-2 py-1 bg-slate-50 hover:bg-rose-50 rounded border border-slate-200">
+                            🗑️ Hapus
+                        </button>
+                    </div>
+
+                    <div class="text-xs text-slate-600 space-y-1 bg-slate-50/50 p-2.5 rounded-lg border border-slate-100">
+                        <div class="flex justify-between">
+                            <span class="text-slate-400">Tanggal Tenggat (due_date):</span>
+                            <span class="font-bold text-slate-700">${tx.due_date}</span>
+                        </div>
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Item Buku Dipinjam (${details.length} Judul)</span>
+                        ${booksListHtml}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+
+            // Update JSON Live View
+            const fullStructure = transactionsTable.map(tx => ({
+                header: tx,
+                details: transactionDetailsTable.filter(d => d.transaction_id === tx.id)
+            }));
+            jsonPreview.textContent = JSON.stringify(fullStructure, null, 2);
+        }
+    </script>
+</body>
+</html>
